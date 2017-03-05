@@ -1,0 +1,31 @@
+{
+    "name": "simple-template-mailer",
+    "version": "0.0.6",
+    "description": "Simple manage templates and translations, bulid and send mails. For medium projects.",
+    "author": "Felix Furtmayr",
+    "license": "ISC",
+    "main": "index.js",
+    "dependencies": {
+        "mustache": "^2.2.1",
+        "nodemailer": "2.7.2",
+        "inline-source": "5.2.0"
+    },
+    "_npmVersion": "2.15.5",
+    "_nodeVersion": "4.4.5",
+    "_npmUser": {
+        "name": "rapidfacture",
+        "email": "ff@rapidfacture.com",
+        "maintainers": [{
+            "name": "rapidfacture",
+            "email": "ff@rapidfacture.com"
+        }]
+    },
+    "keywords": [
+        "mail",
+        "templates",
+        "nodemailer",
+        "inline",
+        "mustache",
+        "translation"
+    ]
+}
