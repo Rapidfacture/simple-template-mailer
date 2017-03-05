@@ -8,7 +8,6 @@
 
 ## ToDo
  * test the "inline" function
- * github repo
  * testing
 
 ## Installation
@@ -26,14 +25,15 @@ var mailer = simpleTemplateMailer({ // create a instance
           host: 'smtp.test.mail.address',
           requiresAuth: false,
   },
-  translationsPath: "./translations", // template options
-  templatesPath: "./templates",
+  translationsPath: __dirname +  "/translations", // template options
+  templatesPath: __dirname + "/templates",
   defaultLanguage: "de"
 });
 
 
 // usage
-mailer.send({  name: 'newsletter', // template name
+mailer.send({
+            name: 'newsletter', // template name
             language: "en",
             data: {test: 234}}, // data from your app inserted in template
             {to:["max.mustermann@gmx.net"]} // nodemailer options
