@@ -22,15 +22,15 @@ module.exports = function(config) {
     translationsPath: config.translationsPath || null,
     templatesPath: config.templatesPath || 'templates',
 
-    send: function(template, options, callback, errorFunction) {
 
-      var message = options;
+    getTemplate: function(template, errorFunction){
 
-      if (template) { // => prepare templates
+        if (!template) {
+            error("no template defined", errorFunction);
+            return;
+        }
 
-        message = message || {};
-
-        var lang;
+        var lang, message = {};
 
         if (template.language && this.translations[template.language]) {
           lang = this.translations[template.language]; // get choosen translation
@@ -52,8 +52,6 @@ module.exports = function(config) {
             });
         }
 
-
-
         // html message
         try {
 
@@ -69,7 +67,6 @@ module.exports = function(config) {
 
           // inline sources (css, images)
           // https://www.npmjs.com/package/inline-source
-
           var htmlTemplate = inline(htmlstring, {
             compress: true,
             // Skip all script tags
@@ -78,22 +75,31 @@ module.exports = function(config) {
 
 
           message.html = mustache.render( // compile with mustache
-            htmlstring, { // json inserted in "{{ }}"
+            htmlTemplate, { // json inserted in "{{ }}"
               data: template.data,
               lang: lang
             });
+
+         return message;
         } catch (err) {
           error(err, errorFunction);
           return;
         }
-
-      } else if (!message || !message.to) {
-        error("template and options defined for nodemailer", errorFunction);
-        return;
-      }
+    },
 
 
-      // send mail with nodemailer /////////////////////////////////
+    send: function(template, message, callback, errorFunction) {
+
+        if (!message || !message.to) {
+          error("no template and no options defined for nodemailer", errorFunction);
+          return;
+        }
+
+        var mailContent = this.getTemplate(template, errorFunction);
+        message.subject = message.subject || mailContent.subject;
+        message.html = message.html || mailContent.html;
+
+      // send mail with nodemailer
       this.transporter.sendMail(message, // options here: https://nodemailer.com/message/
         function(err, info) {
           if (err) {
@@ -106,7 +112,8 @@ module.exports = function(config) {
             }
           }
         });
-    },
+    }
+
   };
 
 
@@ -158,7 +165,7 @@ module.exports = function(config) {
 function log(message, args) {
   args = args || [];
   args.unshift(message);
-  args.unshift("node-template-mailer ");
+  args.unshift("simple-template-mailer ");
   console.log.apply(this, args);
 }
 
@@ -166,6 +173,6 @@ function error(message, callback) {
   if (callback) {
     callback(message);
   } else {
-    console.log("node-template-mailer error: ", message);
+    console.log("simple-template-mailer error: ", message);
   }
 }
