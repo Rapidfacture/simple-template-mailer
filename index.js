@@ -7,171 +7,196 @@
  * @license ISC
  */
 
-var inline = require('inline-source').sync; // synchronous version
-var mustache = require('mustache');
-var nodemailer = require('nodemailer');
-var fs = require('fs');
 
-// create an instance: var mail = simpleTemplateMailer();
+// dependencys
+var fs = require('fs'),
+  mustache = require('mustache'),
+  inline = require('inline-source'),
+  nodemailer = require('nodemailer');
+
+// options passed when creating an instance
+var opts = {};
+
+// json tranlation files will be stored here
+var translations = [];
+
+
+
+
+/** create an instance
+ *
+ * @example
+ * var mail = simpleTemplateMailer({
+ *  defaultLanguage: 'en',
+ *  transporter:  { // nodemailer tramporter options
+ *     host: 'smtp.test.mail.address',
+ *     requiresAuth: false,
+ *  },
+ *  translationsPath: __dirname +  "/translations",
+ *  templatesPath: __dirname + "/templates",
+ * });
+ *
+ */
 module.exports = function(config) {
 
-  var mailer = {
-
-    // Options that should be passed when creating an instance
+  // options passed when creating an instance
+  opts = {
+    defaultLanguage: config.defaultLanguage || 'de',
     transporter: nodemailer.createTransport(config.transporter),
-    translationsPath: config.translationsPath || null,
+    translationsPath: config.translationsPath || 'translations',
     templatesPath: config.templatesPath || 'templates',
-
-
-    getTemplate: function(template, errorFunction){
-
-        if (!template) {
-            error("no template defined", errorFunction);
-            return;
-        }
-
-        var lang, message = {};
-
-        if (template.language && this.translations[template.language]) {
-          lang = this.translations[template.language]; // get choosen translation
-        } else if (this.translations && config.defaultLanguage) {
-          log("no language found, switching to default");
-          lang = this.translations[config.defaultLanguage];
-        } else {
-          log("no language defined");
-        }
-
-
-        // subject
-        if (lang[template.name]) {
-          var htmlSubject = lang[template.name];
-          message.subject = mustache.render( // compile with mustache
-            htmlSubject, { // json inserted in "{{ }}"
-              data: template.data,
-              lang: lang
-            });
-        }
-
-        // html message
-        try {
-
-          var htmlstring = "";
-          var templateDir = this.templatesPath + "/" + template.name + '/template.html';
-
-          try {
-            htmlstring = fs.readFileSync(templateDir, 'utf8');
-          } catch (err) {
-            error("Template file not found " + templateDir + ", " + err, errorFunction);
-            return;
-          }
-
-          // inline sources (css, images)
-          // https://www.npmjs.com/package/inline-source
-          var htmlTemplate = inline(htmlstring, {
-            compress: true,
-            // Skip all script tags
-            ignore: 'script'
-          });
-
-
-          message.html = mustache.render( // compile with mustache
-            htmlTemplate, { // json inserted in "{{ }}"
-              data: template.data,
-              lang: lang
-            });
-
-         return message;
-        } catch (err) {
-          error(err, errorFunction);
-          return;
-        }
-    },
-
-
-    send: function(template, message, callback, errorFunction) {
-
-        if (!message || !message.to) {
-          error("no template and no options defined for nodemailer", errorFunction);
-          return;
-        }
-
-        var mailContent = this.getTemplate(template, errorFunction);
-        message.subject = message.subject || mailContent.subject;
-        message.html = message.html || mailContent.html;
-
-      // send mail with nodemailer
-      this.transporter.sendMail(message, // options here: https://nodemailer.com/message/
-        function(err, info) {
-          if (err) {
-            error("error in sendMail: " + err, errorFunction);
-          } else {
-            if (callback) {
-              callback(message, info);
-            } else {
-              log('message sent: ', [info]);
-            }
-          }
-        });
-    }
-
+    inlineAttribute: config.inlineAttribute || false
   };
 
+  // init: read all json translatonFiles and store them in "translations"
+  _getTranslations();
 
-
-
-  mailer.translations = function() {
-
-    // get translation file names
-    var translatonFiles = _getAllFilesFromFolder(mailer.translationsPath);
-
-    function _getAllFilesFromFolder(dir) {
-      var results = [];
-      fs.readdirSync(dir).forEach(function(file) {
-
-        filePath = dir + '/' + file;
-        var stat = fs.statSync(filePath);
-
-        if (stat && stat.isDirectory()) {
-          results = results.concat(_getAllFilesFromFolder(filePath));
-        } else results.push({
-          path: filePath,
-          name: file.split(".")[0]
-        });
-      });
-      return results;
-    }
-
-    // store translation file content
-    var translations = {};
-    translatonFiles.forEach(function(translationFile) {
-        try{
-            translations[translationFile.name] = JSON.parse(fs.readFileSync(translationFile.path, 'utf8'));
-        }catch(err){
-            error("Error in json file " + translationFile.name + ": " + err);
-        }
-    });
-
-    return translations;
-  }();
-
-
-
-  return mailer;
+  // external methods
+  return {
+    getTemplate: _getTemplate,
+    send: _send
+  };
 };
 
 
 
 
-function log(message, args) {
-  args = args || [];
-  args.unshift(message);
-  args.unshift("simple-template-mailer ");
-  console.log.apply(this, args);
+// read all json translatonFiles and store them in "translations"
+_getTranslations = function() {
+
+  // get file names
+  var translatonFiles = _getAllFilesFromFolder(opts.translationsPath);
+  function _getAllFilesFromFolder(dir) {
+    var results = [];
+    fs.readdirSync(dir).forEach(function(file) {
+      filePath = dir + '/' + file;
+      var stat = fs.statSync(filePath);
+      if (stat && stat.isDirectory()) {
+        results = results.concat(_getAllFilesFromFolder(filePath));
+      } else results.push({
+        path: filePath,
+        name: file.split(".")[0]
+      });
+    });
+    return results;
+  }
+
+  // store file content in "translations"
+  translatonFiles.forEach(function(translationFile) {
+    try {
+      translations[translationFile.name] = JSON.parse(fs.readFileSync(translationFile.path, 'utf8'));
+    } catch (err) {
+      error("Error in json file " + translationFile.name + ": " + err);
+    }
+  });
+
+};
+
+
+
+function _getTemplate(template, successFunction, errorFunction) {
+
+  // check input data
+  if (!template) {
+    error("no template defined", errorFunction);
+    return;
+  }
+  var lang, message = {};
+  if (template.language && translations[template.language]) {
+    lang = translations[template.language]; // get choosen translation
+} else if (translations && opts.defaultLanguage) {
+    _log("no language found, switching to default");
+    lang = translations[opts.defaultLanguage];
+  } else {
+    _log("no language defined");
+  }
+
+
+  // subject: compile with mustache
+  if (lang[template.name]) {
+    var htmlSubject = lang[template.name];
+    message.subject = mustache.render( //
+      htmlSubject, { // json inserted in "{{ }}"
+        data: template.data,
+        lang: lang
+      });
+  }
+
+
+  // html message : compile with mustache, then inline extern css/js/img
+  var templateDir = opts.templatesPath + "/" + template.name;
+  var templatePath = templateDir + '/template.html';
+
+  try { // compile with mustache
+    message.html = mustache.render(
+      fs.readFileSync(templatePath, 'utf8'), { // json inserted in "{{ }}"
+        data: template.data,
+        lang: lang
+      });
+    try { // inline sources (css, images)
+      // https://www.npmjs.com/package/inline-source
+      inline(message.html, {
+        compress: true,
+        attribute: opts.inlineAttribute,
+        rootpath: templateDir
+      }, function(err, html) {
+        if (err) {
+          error("Inline error: " + err, errorFunction);
+          return;
+        }
+        message.html = html;
+        successFunction(message);
+      });
+
+    } catch (err) {
+      error(err, errorFunction);
+      return;
+    }
+  } catch (templateErr) {
+    error("Template file not found " + templateDir + ", " + templateErr, errorFunction);
+    return;
+  }
 }
 
-function error(message, callback) {
-  if (callback) {
-    callback(message);
+
+function _send(template, message, callback, errorFunction) {
+
+  if (!message || !message.to) {
+    error("no template and no options defined for nodemailer", errorFunction);
+    return;
+  }
+  _getTemplate(template, function(mailContent) {
+
+    message.subject = message.subject || mailContent.subject;
+    message.html = message.html || mailContent.html;
+
+    // send mail with nodemailer
+    // options: https://nodemailer.com/message/
+    opts.transporter.sendMail(message,
+      function(err, info) {
+        if (err) {
+          error("error in sendMail: " + err, errorFunction);
+        } else {
+          if (callback) {
+            callback(message, info);
+          } else {
+            _log('message sent: ', [info]);
+          }
+        }
+      });
+  }, errorFunction);
+}
+
+
+
+function _log(message, args) {
+  arguments.unshift("simple-template-mailer ");
+  console.log.apply(this, arguments);
+}
+
+function error(message, errorFunction) {
+  if (errorFunction) {
+    errorFunction(message);
   } else {
     console.log("simple-template-mailer error: ", message);
   }

@@ -4,10 +4,8 @@
  Uses "mustache" to compile html, "inline" for embedding external referneces (css, js, images)
  into html and nodemailer for sending.
 
- Note: This Module is in early stage
-
 ## ToDo
- * test the "inline" function
+ * test the examples
  * testing
 
 ## Installation
@@ -55,16 +53,19 @@ Corresponding template file
 <html>
 
 <head>
+   <!-- inline includes external files like css, js, img -->
     <link rel="stylesheet" href="../global.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+<img src="img.png">
+
 <h1>simpleTemplateMailer newsletter message<h1>
 
 {{lang.jsonMessage}}
 
-<!-- mustache also allows html templating from the json files -->
+<!-- mustache also allows html templating from the json files; use three "{" to compile html -->
 {{{footer}}}
 
 </body>
@@ -85,15 +86,33 @@ mail
   |
   |__templates
        |
-       |_ global.css (this css can be embedde everywhere using "inline")
+       |_ global.css (this css can be embedded everywhere using "inline")
        |
        |_ newsletter
        |  |_ template.html
+       |  |_ img.png (css embedded with "inline")
+       |  |_ style.css (img embedded with "inline")
        |
        |_ orderconfirm
           |_ template.html
-          |_ styles.css (custom css embedded with "inline")
+          |_ styles.css
 
+```
+
+### Get compiled HTML templates
+Can be used to send a compiled default mail text to the user, that can modified some passages before the text will be sent.
+```js
+mailer.getTemplate({ // template options
+    name: 'newsletter', // template folder name
+    language: "de", // select json translation file
+    data: { // data from your app for mustache
+      testData: "HelloWorld"
+    }
+  },
+  function(template) {
+      console.log(template);
+  }
+);
 ```
 
 

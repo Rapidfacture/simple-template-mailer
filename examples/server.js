@@ -12,6 +12,22 @@ var mailer = simpleTemplateMailer({ // create a instance
 
 
 
+// call with several options
+mailer.getTemplate({ // template options
+
+    name: 'newsletter', // template folder name
+
+    language: "de", // select json translation file
+
+    data: { // data from your app for mustache
+      testData: "HelloWorld"
+    }
+  },
+  function(template) { // on success
+      console.log(template);
+  }
+);
+
 
 // call with several options
 mailer.mail({ // template options
