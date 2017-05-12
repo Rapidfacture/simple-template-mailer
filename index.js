@@ -180,7 +180,7 @@ function _send(template, message, callback, errorFunction) {
           if (callback) {
             callback(message, info);
           } else {
-            _log('message sent: ', [info]);
+            _log('message sent: ', info);
           }
         }
       });
@@ -189,9 +189,10 @@ function _send(template, message, callback, errorFunction) {
 
 
 
-function _log(message, args) {
-  arguments.unshift("simple-template-mailer ");
-  console.log.apply(this, arguments);
+function _log() {
+  var args = [].slice.apply(argumentsArray);
+  args.unshift("simple-template-mailer ");
+  console.log.apply(this, args);
 }
 
 function error(message, errorFunction) {
