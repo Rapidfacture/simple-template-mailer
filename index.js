@@ -190,7 +190,7 @@ function _send(template, message, callback, errorFunction) {
 
 
 function _log() {
-  var args = [].slice.apply(argumentsArray);
+  var args = [].slice.apply(arguments);
   args.unshift("simple-template-mailer ");
   console.log.apply(this, args);
 }
