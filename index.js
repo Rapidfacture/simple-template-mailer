@@ -125,14 +125,36 @@ function _getTemplate(template, successFunction, errorFunction) {
 
   // html message : compile with mustache, then inline extern css/js/img
   var templateDir = opts.templatesPath + "/" + template.name;
-  var templatePath = templateDir + '/template.html';
+  var templateHtml = templateDir + '/template.html';
+  var templateTxt = templateDir + '/template.txt';
 
   try { // compile with mustache
-    message.html = mustache.render(
-      fs.readFileSync(templatePath, 'utf8'), { // json inserted in "{{ }}"
-        data: template.data,
-        lang: lang
-      });
+    message.html = null;
+    if (fs.fileExistsSync(templateHtml)) {
+      message.html = mustache.render(
+        fs.readFileSync(templateHtml, 'utf8'), { // json inserted in "{{ }}"
+          data: template.data,
+          lang: lang
+        });
+    }
+
+    message.txt = null;
+    if (fs.fileExistsSync(templateTxt)) {
+      message.txt = mustache.render(
+        fs.readFileSync(templateTxt, 'utf8'), { // json inserted in "{{ }}"
+          data: template.data,
+          lang: lang
+        });
+      
+      // If no html template was rendered fallback is txt
+      if (message.html === null) {
+        message.html = message.txt;
+      }
+    } else {
+      // Fallback for txt. Parse html with stripped tags
+      message.txt = message.html.replace(/<(?:.|\n)*?>/gm, '');
+    }
+
     try { // inline sources (css, images)
       // https://www.npmjs.com/package/inline-source
       inline(message.html, {
