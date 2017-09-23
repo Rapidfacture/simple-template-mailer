@@ -130,7 +130,7 @@ function _getTemplate(template, successFunction, errorFunction) {
 
   try { // compile with mustache
     message.html = null;
-    if (fs.fileExistsSync(templateHtml)) {
+    if (fs.existsSync(templateHtml)) {
       message.html = mustache.render(
         fs.readFileSync(templateHtml, 'utf8'), { // json inserted in "{{ }}"
           data: template.data,
@@ -138,9 +138,9 @@ function _getTemplate(template, successFunction, errorFunction) {
         });
     }
 
-    message.txt = null;
-    if (fs.fileExistsSync(templateTxt)) {
-      message.txt = mustache.render(
+    message.text = null;
+    if (fs.existsSync(templateTxt)) {
+      message.text = mustache.render(
         fs.readFileSync(templateTxt, 'utf8'), { // json inserted in "{{ }}"
           data: template.data,
           lang: lang
@@ -148,11 +148,11 @@ function _getTemplate(template, successFunction, errorFunction) {
       
       // If no html template was rendered fallback is txt
       if (message.html === null) {
-        message.html = message.txt;
+        message.html = message.text;
       }
     } else {
       // Fallback for txt. Parse html with stripped tags
-      message.txt = message.html.replace(/<(?:.|\n)*?>/gm, '');
+      message.text = message.html.replace(/<(?:.|\n)*?>/gm, '');
     }
 
     try { // inline sources (css, images)
@@ -191,6 +191,7 @@ function _send(template, message, callback, errorFunction) {
 
     message.subject = message.subject || mailContent.subject;
     message.html = message.html || mailContent.html;
+    message.text = message.text || mailContent.text;
 
     // send mail with nodemailer
     // options: https://nodemailer.com/message/
