@@ -8,7 +8,7 @@
         "url": "https://github.com/rapidfacture/simple-template-mailer/issues"
     },
     "homepage": "https://github.com/rapidfacture/simple-template-mailer#readme",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Simple manage templates and translations, bulid and send mails. For medium projects.",
     "author": "Felix Furtmayr",
     "license": "ISC",
@@ -17,16 +17,6 @@
         "mustache": "^2.2.1",
         "nodemailer": "2.7.2",
         "inline-source": "5.2.0"
-    },
-    "_npmVersion": "2.15.5",
-    "_nodeVersion": "4.4.5",
-    "_npmUser": {
-        "name": "rapidfacture",
-        "email": "ff@rapidfacture.com",
-        "maintainers": [{
-            "name": "rapidfacture",
-            "email": "ff@rapidfacture.com"
-        }]
     },
     "keywords": [
         "mail",
