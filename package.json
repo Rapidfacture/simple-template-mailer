@@ -1,9 +1,9 @@
 {
     "name": "simple-template-mailer",
     "repository": {
-        "type": "git",
-        "url": "git+https://github.com/RAPIDFACTURE/simple-template-mailer.git"
-    },
+      "type": "git",
+      "url": "git@github.com:RAPIDFACTURE/simple-template-mailer.git"
+      },
     "bugs": {
         "url": "https://github.com/rapidfacture/simple-template-mailer/issues"
     },
