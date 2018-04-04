@@ -25,17 +25,26 @@ var mailer = simpleTemplateMailer({ // create a instance
   },
   translationsPath: __dirname +  "/translations", // template options
   templatesPath: __dirname + "/templates",
-  defaultLanguage: "de"
+  defaultLanguage: "de",
+  inlineAttribute: "inline" // default: false => inline everything; set to "inline" to only inline tags with attribute "inline"
 });
 
 
 // usage
-mailer.send({
-            name: 'newsletter', // template name
-            language: "en",
-            data: {test: 234}}, // data from your app inserted in template
-            {to:["max.mustermann@gmx.net"]} // nodemailer options
-        );
+mailer.send(
+   // template
+   {
+      name: 'newsletter',
+      language: "en",
+      data: {test: 234} // data from your app inserted in template
+       inlineAttribute: "inline" // optional: individual inline configuration
+   },
+   // nodemailer options
+   {to:["max.mustermann@gmx.net"]}
+   // success function
+   function (message, info){},
+   // error function
+   function (err){});
 
 ```
 
