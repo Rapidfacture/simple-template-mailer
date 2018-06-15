@@ -20,6 +20,7 @@ const fs = require('fs'),
 // logging
 var log = {
    success: console.log,
+   info: console.log,
    error: console.error,
    critical: function () {
       throw new Error(console.error.apply(arguments));
@@ -110,7 +111,7 @@ function _getTranslations () {
       try {
          translations[translationFile.name] = JSON.parse(fs.readFileSync(translationFile.path, 'utf8'));
       } catch (err) {
-         error('Error in json file ' + translationFile.name + ': ' + err);
+         log.error('Error in json file ' + translationFile.name + ': ' + err);
       }
    });
 
@@ -118,21 +119,20 @@ function _getTranslations () {
 
 
 
-function _getTemplate (template, successFunction, errorFunction) {
+function _getTemplate (template, callback) {
 
-   // check input data
-   if (!template) {
-      error('no template defined', errorFunction);
-      return;
-   }
+   // housekeeping
+   if (!template) return callback('no template defined');
+   if (!callback) return log.error('no callback defined');
+
    var lang, message = {};
    if (template.language && translations[template.language]) {
       lang = translations[template.language]; // get choosen translation
    } else if (translations && opts.defaultLanguage) {
-      _log('no language found, switching to default');
+      log.info('no language found, switching to default');
       lang = translations[opts.defaultLanguage];
    } else {
-      _log('no language defined');
+      log.info('no language defined');
    }
 
 
@@ -178,32 +178,45 @@ function _getTemplate (template, successFunction, errorFunction) {
             attribute: inlineAttribute,
             rootpath: templateDir
          }, function (err, html) {
+
             if (err) {
-               error('Inline error: ' + err, errorFunction);
-               return;
+               log.error('Inline error: ' + err);
+               return callback(err);
             }
             message.html = html;
-            successFunction(message);
+            callback(null, message);
          });
 
       } catch (err) {
-         error(err, errorFunction);
-         return;
+         log.error('Inline error: ' + err);
+         return callback(err);
       }
    } catch (templateErr) {
-      error('Template file not found ' + templateDir + ', ' + templateErr, errorFunction);
+      return callback('Template file not found ' + templateDir + ', ' + templateErr);
 
    }
 }
 
 
-function _send (template, message, callback, errorFunction) {
+function _send (template, message, callback) {
 
-   if (!message || !message.to) {
-      error('no template and no options defined for nodemailer', errorFunction);
-      return;
+   // housekeeping
+   let errMsg = '';
+   if (!template) errMsg = 'no template defined';
+   if (!message || !message.to) errMsg = 'no template and no options defined for nodemailer';
+   if (!callback) errMsg = 'no callback defined';
+   if (errMsg) {
+      log.error(errMsg);
+      return callback(errMsg);
    }
-   _getTemplate(template, function (mailContent) {
+
+
+   _getTemplate(template, function (mailContent, err) {
+
+      if (err) {
+         log.error('error in getting template: ' + err);
+         return callback(err);
+      }
 
       message.subject = message.subject || mailContent.subject;
       message.html = message.html || mailContent.html;
@@ -214,30 +227,11 @@ function _send (template, message, callback, errorFunction) {
       opts.transporter.sendMail(message,
          function (err, info) {
             if (err) {
-               error('error in sendMail: ' + err, errorFunction);
+               log.error('error in sendMail: ' + err);
             } else {
-               if (callback) {
-                  callback(message, info);
-               } else {
-                  _log('message sent: ', info);
-               }
+               log.success('successfull sent mail');
             }
+            callback(err, info);
          });
-   }, errorFunction);
-}
-
-
-
-function _log () {
-   var args = [].slice.apply(arguments);
-   args.unshift('simple-template-mailer ');
-   console.log.apply(this, args);
-}
-
-function error (message, errorFunction) {
-   if (errorFunction) {
-      errorFunction(message);
-   } else {
-      console.log('simple-template-mailer error: ', message);
-   }
+   });
 }
