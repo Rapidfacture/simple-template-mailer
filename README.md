@@ -41,10 +41,10 @@ mailer.send(
    },
    // nodemailer options
    {to:["max.mustermann@gmx.net"]}
-   // success function
-   function (message, info){},
-   // error function
-   function (err){});
+   // callback function
+   function (err, info){
+      console.log(err, info);
+   });
 
 ```
 
@@ -118,8 +118,8 @@ mailer.getTemplate({ // template options
       testData: "HelloWorld"
     }
   },
-  function(template) {
-      console.log(template);
+  function(err, template) {
+      console.log(err, template);
   }
 );
 ```
