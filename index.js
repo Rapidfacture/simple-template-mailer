@@ -122,7 +122,10 @@ function _getTranslations () {
 function _getTemplate (template, callback) {
 
    // housekeeping
-   if (!template) return callback('no template defined');
+   if (!template) {
+      log.error('no template defined');
+      return callback('no template defined');
+   }
    if (!callback) return log.error('no callback defined');
 
    var lang, message = {};
@@ -145,6 +148,7 @@ function _getTemplate (template, callback) {
             lang: lang
          });
    }
+
 
 
    // html message : compile with mustache, then inline extern css/js/img
