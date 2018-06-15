@@ -2,7 +2,7 @@
 
  Simple manage templates and translations, bulid and send mails. For medium projects.
  Uses "mustache" to compile html, "inline" for embedding external referneces (css, js, images)
- into html and nodemailer for sending.
+ into html and nodemailer for sending. Adds a plain text version to every sent html mail.
 
 ## ToDo
  * test the examples

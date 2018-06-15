@@ -9,10 +9,11 @@
 
 
 // dependencys
-var fs = require('fs'),
+const fs = require('fs'),
    mustache = require('mustache'),
    inline = require('inline-source'),
-   nodemailer = require('nodemailer');
+   nodemailer = require('nodemailer'),
+   htmlToText = require('html-to-text');
 
 // options passed when creating an instance
 var opts = {};
@@ -126,7 +127,6 @@ function _getTemplate (template, successFunction, errorFunction) {
    // html message : compile with mustache, then inline extern css/js/img
    var templateDir = opts.templatesPath + '/' + template.name;
    var templateHtml = templateDir + '/template.html';
-   var templateTxt = templateDir + '/template.txt';
 
    try { // compile with mustache
       message.html = null;
@@ -138,22 +138,8 @@ function _getTemplate (template, successFunction, errorFunction) {
             });
       }
 
-      message.text = null;
-      if (fs.existsSync(templateTxt)) {
-         message.text = mustache.render(
-            fs.readFileSync(templateTxt, 'utf8'), { // json inserted in "{{ }}"
-               data: template.data,
-               lang: lang
-            });
-
-         // If no html template was rendered fallback is txt
-         if (message.html === null) {
-            message.html = message.text;
-         }
-      } else {
-      // Fallback for txt. Parse html with stripped tags
-         message.text = message.html.replace(/<(?:.|\n)*?>/gm, '');
-      }
+      // only html availale => parse text from html to text
+      if (!message.text && message.html) message.text = htmlToText.fromString(message.html, { wordwrap: 130 });
 
       var inlineAttribute;
       if (template.inlineAttribute || template.inlineAttribute === false) {

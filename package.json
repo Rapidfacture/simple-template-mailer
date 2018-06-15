@@ -14,9 +14,10 @@
   "license": "ISC",
   "main": "index.js",
   "dependencies": {
-    "mustache": "2.2.1",
-    "nodemailer": "2.7.2",
-    "inline-source": "5.2.0"
+    "mustache": "2.3.0",
+    "nodemailer": "4.6.7",
+    "inline-source": "6.1.5",
+    "html-to-text": "4.0.0"
   },
   "keywords": [
     "mail",
