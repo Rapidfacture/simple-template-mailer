@@ -184,7 +184,7 @@ function _getTemplate (template, callback) {
          }, function (err, html) {
 
             if (err) {
-               log.error('Inline error: ' + err);
+               log.error('Inline error: ', err);
                return callback(err);
             }
             message.html = html;
@@ -192,7 +192,7 @@ function _getTemplate (template, callback) {
          });
 
       } catch (err) {
-         log.error('Inline error: ' + err);
+         log.error('Inline error: ', err);
          return callback(err);
       }
    } catch (templateErr) {
@@ -215,10 +215,10 @@ function _send (template, message, callback) {
    }
 
 
-   _getTemplate(template, function (mailContent, err) {
+   _getTemplate(template, function (err, mailContent) {
 
       if (err) {
-         log.error('error in getting template: ' + err);
+         log.error('error in getting template: ', err);
          return callback(err);
       }
 
@@ -231,7 +231,7 @@ function _send (template, message, callback) {
       opts.transporter.sendMail(message,
          function (err, info) {
             if (err) {
-               log.error('error in sendMail: ' + err);
+               log.error('error in sendMail: ', err);
             } else {
                log.success('successfull sent mail');
             }
