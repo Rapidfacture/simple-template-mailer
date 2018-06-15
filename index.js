@@ -15,6 +15,22 @@ const fs = require('fs'),
    nodemailer = require('nodemailer'),
    htmlToText = require('html-to-text');
 
+
+
+// logging
+var log = {
+   success: console.log,
+   error: console.error,
+   critical: function () {
+      throw new Error(console.error.apply(arguments));
+   }
+};
+try { // try using rf-log
+   log = require(require.resolve('rf-log')).customPrefixLogger('[simple-template-mailer]');
+} catch (e) {}
+
+
+
 // options passed when creating an instance
 var opts = {};
 
@@ -38,6 +54,13 @@ var translations = [];
  *
  */
 module.exports = function (config) {
+
+   config = config || {};
+
+   // housekeeping
+   if (!config.transporter) return log.error('no transporter defined, aborting');
+   if (!config.translationsPath) return log.error('no translationsPath defined, aborting');
+   if (!config.templatesPath) return log.error('no templatesPath defined, aborting');
 
    // options passed when creating an instance
    opts = {
