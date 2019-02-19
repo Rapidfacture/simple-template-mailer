@@ -129,7 +129,6 @@ function _getTemplate (template, callback) {
    }
    if (!callback) return log.error('no callback defined');
    var langObj, message = {};
-   var lang = template.language || opts.defaultLanguage || 'de';
 
    if (template.language && translations[template.language]) {
       langObj = translations[template.language]; // get choosen translation
@@ -140,10 +139,15 @@ function _getTemplate (template, callback) {
       log.info('no language defined');
    }
 
+
+   // check translations from db
+   // if existing, add them to template date
+   var lang = template.language || opts.defaultLanguage || 'de';
+
    if (opts.translations[lang] && template.data) {
-      template.data.companyName = opts.translations[lang].companyName || '';
-      template.data.htmlHeader = opts.translations[lang].htmlHeader || '';
-      template.data.htmlFooter = opts.translations[lang].htmlFooter || '';
+      for (var key in opts.translations[lang]) {
+         template.data[key] = opts.translations[lang][key];
+      }
    }
 
 
