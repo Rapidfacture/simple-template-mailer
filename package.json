@@ -8,7 +8,7 @@
     "url": "https://github.com/rapidfacture/simple-template-mailer/issues"
   },
   "homepage": "https://github.com/rapidfacture/simple-template-mailer#readme",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Simple manage templates and translations, bulid and send mails. For medium projects.",
   "author": "Felix Furtmayr",
   "license": "ISC",
