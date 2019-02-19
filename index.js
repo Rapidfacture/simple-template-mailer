@@ -69,7 +69,8 @@ module.exports = function (config) {
       transporter: nodemailer.createTransport(config.transporter),
       translationsPath: config.translationsPath || 'translations',
       templatesPath: config.templatesPath || 'templates',
-      inlineAttribute: config.inlineAttribute || false
+      inlineAttribute: config.inlineAttribute || false,
+      translations: config.translations || {}
    };
 
    // init: read all json translatonFiles and store them in "translations"
@@ -127,25 +128,32 @@ function _getTemplate (template, callback) {
       return callback('no template defined');
    }
    if (!callback) return log.error('no callback defined');
+   var langObj, message = {};
+   var lang = template.language || opts.defaultLanguage || 'de';
 
-   var lang, message = {};
    if (template.language && translations[template.language]) {
-      lang = translations[template.language]; // get choosen translation
+      langObj = translations[template.language]; // get choosen translation
    } else if (translations && opts.defaultLanguage) {
       log.info('no language found, switching to default');
-      lang = translations[opts.defaultLanguage];
+      langObj = translations[opts.defaultLanguage];
    } else {
       log.info('no language defined');
    }
 
+   if (opts.translations[lang] && template.data) {
+      template.data.companyName = opts.translations[lang].companyName || '';
+      template.data.htmlHeader = opts.translations[lang].htmlHeader || '';
+      template.data.htmlFooter = opts.translations[lang].htmlFooter || '';
+   }
+
 
    // subject: compile with mustache
-   if (lang[template.name]) {
-      var htmlSubject = lang[template.name];
+   if (langObj[template.name]) {
+      var htmlSubject = langObj[template.name];
       message.subject = mustache.render( //
          htmlSubject, { // json inserted in "{{ }}"
             data: template.data,
-            lang: lang
+            lang: langObj
          });
    }
 
@@ -161,7 +169,7 @@ function _getTemplate (template, callback) {
          message.html = mustache.render(
             fs.readFileSync(templateHtml, 'utf8'), { // json inserted in "{{ }}"
                data: template.data,
-               lang: lang
+               lang: langObj
             });
       }
 
