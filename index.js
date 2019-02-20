@@ -144,9 +144,9 @@ function _getTemplate (template, callback) {
    // if existing, add them to template date
    var lang = template.language || opts.defaultLanguage || 'de';
 
-   if (opts.translations[lang] && template.data) {
+   if (opts.translations[lang] && langObj) {
       for (var key in opts.translations[lang]) {
-         template.data[key] = opts.translations[lang][key];
+         langObj[key] = opts.translations[lang][key];
       }
    }
 
