@@ -149,21 +149,28 @@ function _getTemplate (template, callback) {
          });
    }
 
-
-
    // html message : compile with mustache, then inline extern css/js/img
    var templateDir = opts.templatesPath + '/' + template.name;
-   var templateHtml = templateDir + '/template.html';
+   var templatePath = templateDir + (template.short ? 'template-short.txt' : '/template.html');
 
-   try { // compile with mustache
-      message.html = null;
-      if (fs.existsSync(templateHtml)) {
-         message.html = mustache.render(
-            fs.readFileSync(templateHtml, 'utf8'), { // json inserted in "{{ }}"
-               data: template.data,
-               lang: lang
-            });
-      }
+   if (fs.existsSync(templatePath)) { // TODO: fs.existsSync is deprecated
+      // compile with mustache
+      message.html = mustache.render(
+         fs.readFileSync(templatePath, 'utf8'), { // json inserted in "{{ }}"
+            data: template.data,
+            lang: lang
+         });
+   } else { // no template found, instead return the template subject
+      message.html = message.subject;
+   }
+
+
+   if (template.short) {
+      message.text = message.html;
+      return callback(null, message);
+   }
+
+   try {
 
       // only html availale => parse text from html to text
       if (!message.text && message.html) message.text = htmlToText.fromString(message.html, { wordwrap: 130 });
@@ -176,7 +183,7 @@ function _getTemplate (template, callback) {
       }
 
       try { // inline sources (css, images)
-      // https://www.npmjs.com/package/inline-source
+         // https://www.npmjs.com/package/inline-source
          inline(message.html, {
             compress: true,
             attribute: inlineAttribute,
@@ -197,8 +204,8 @@ function _getTemplate (template, callback) {
       }
    } catch (templateErr) {
       return callback('Template file not found ' + templateDir + ', ' + templateErr);
-
    }
+
 }
 
 

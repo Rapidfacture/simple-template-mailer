@@ -20,8 +20,8 @@ var simpleTemplateMailer = require('simple-template-mailer');
 
 var mailer = simpleTemplateMailer({ // create a instance
   transporter:  { // nodemailer tramporter options; parameters should be fetched from an external config
-          host: 'smtp.test.mail.address',
-          requiresAuth: false,
+      host: 'smtp.test.mail.address',
+      requiresAuth: false,
   },
   translationsPath: __dirname +  "/translations", // template options
   templatesPath: __dirname + "/templates",
@@ -37,7 +37,8 @@ mailer.send(
       name: 'newsletter',
       language: "en",
       data: {test: 234} // data from your app inserted in template
-       inlineAttribute: "inline" // optional: individual inline configuration
+      inlineAttribute: "inline" // optional: individual inline configuration
+      short: false // optional: set "true" to read a short version of the template under template-short.txt
    },
    // nodemailer options
    {to:["max.mustermann@gmx.net"]}
@@ -101,6 +102,7 @@ mail
        |  |_ template.html
        |  |_ img.png (css embedded with "inline")
        |  |_ style.css (img embedded with "inline")
+       |  |_ template-short.txt
        |
        |_ orderconfirm
           |_ template.html
