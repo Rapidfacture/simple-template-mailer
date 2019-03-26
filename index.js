@@ -13,7 +13,8 @@ const fs = require('fs'),
    mustache = require('mustache'),
    inline = require('inline-source'),
    nodemailer = require('nodemailer'),
-   htmlToText = require('html-to-text');
+   htmlToText = require('html-to-text'),
+   path = require('path');
 
 
 
@@ -163,14 +164,14 @@ function _getTemplate (template, callback) {
 
    // html message : compile with mustache, then inline extern css/js/img
    var templateDir = opts.templatesPath + '/' + template.name;
-   var templatePath = templateDir + (template.short ? 'template-short.txt' : '/template.html');
+   var templatePath = path.join(templateDir, (template.short ? 'template-short.txt' : '/template.html'));
 
    if (fs.existsSync(templatePath)) { // TODO: fs.existsSync is deprecated
       // compile with mustache
       message.html = mustache.render(
          fs.readFileSync(templatePath, 'utf8'), { // json inserted in "{{ }}"
             data: template.data,
-            lang: lang
+            lang: langObj
          });
    } else { // no template found, instead return the template subject
       message.html = message.subject;
@@ -215,7 +216,7 @@ function _getTemplate (template, callback) {
          return callback(err);
       }
    } catch (templateErr) {
-      return callback('Template file not found ' + templateDir + ', ' + templateErr);
+      return callback(templateErr);
    }
 
 }
